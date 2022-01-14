@@ -51,15 +51,6 @@ class RandomForest:
             raise ValueError('You must give in input either a valid training set or a path to an ID3 model (see '
                              'documentation)')
 
-    def check_var(self, bootstrapped_dataset):
-        """
-        :param bootstrapped_dataset
-        :return: True if every input is present on each column
-        """
-        for column in bootstrapped_dataset.columns:
-            if len(bootstrapped_dataset[column].unique()) != len(self.training_set[column].unique()):
-                return False
-        return True
 
     def bootstrap(self):
         """
@@ -70,7 +61,8 @@ class RandomForest:
         bootstrap = self.training_set.iloc[
             np.random.choice(np.arange(0, len(self.training_set)), size=self.n_item)
         ][np.append(np.random.choice(self._attributes, size=self.n_feat_tree, replace=False), self.key)]
-        while not self.check_var(bootstrap):
+        # While there are columns with not all inputs represented : start again
+        while True in [len(bootstrap[column].unique()) != len(self.training_set[column].unique()) for column in bootstrap.columns]:
             bootstrap = self.training_set.iloc[
                 np.random.choice(np.arange(0, len(self.training_set)), size=self.n_item)
             ][np.append(np.random.choice(self._attributes, size=self.n_feat_tree, replace=False), self.key)]
@@ -126,7 +118,7 @@ if __name__ == '__main__':
     test_df = pd.DataFrame(data=test_data, columns=["Maintenance", "Persons", "LuggageBoot", "Safety", "Buy"])
 
     print(test_df)
-    test = RandomForest(training_set=test_df, key="Buy", n_item=8, n_tree=20)
+    test = RandomForest(training_set=test_df, key="Buy", n_item=8, n_tree=40)
 
     print(test.predict(np.array(["High", "More", "Big", "High"])))  # YES is the expected value here
     print(test.predict(np.array(["Low", "5", "Medium", "Medium"])))  # NO is the expected value here
