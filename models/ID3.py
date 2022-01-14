@@ -28,9 +28,9 @@ class ID3:
             self.training_set = training_set
             self.key = key
             self.p_type = p_type
-            self._attributes = np.delete(training_set.columns, np.where(training_set.columns == self.key))
+            self.attributes = np.delete(training_set.columns, np.where(training_set.columns == self.key))
             self._key_list = self.training_set[self.key].unique()
-            self.build_tree(df=self.training_set, attributes=self._attributes)
+            self.build_tree(df=self.training_set, attributes=self.attributes)
         elif load_path is not None:
             self.load(load_path)
         else:
@@ -42,8 +42,8 @@ class ID3:
         This methods built the ID3 tree recursively upon calling
         :param df: (pd.DataFrame) (sub-)DataFram still considered on this step of the tree building
         :param attributes: (np.array) list of attributes still considered on this step of the tree building
-        :param node: current node (None for root)
-        :param option: option leading to the current node (None for root)
+        :param node: current node (None for root iteration)
+        :param option: option leading to the current node (None for root iteration)
         :return:
         """
         # compute split entropy for each attribute left
@@ -56,13 +56,18 @@ class ID3:
         if node is None:
             # initialize the model on the root node
             self._model = n_node
+            node = self._model
         else:
             node.assign(option, n_node)
         for elem in n_node.children.keys():
             resulting_df = df[df[greatest_IG] == elem]
             # if only one output key left at this step of the tree -> stop recursion
-            if len(df[self.key].unique()) == 1:
-                node.assign(option, df[self.key].iloc[0])
+            if len(df[self.key].unique()) == 1 or len(attributes) == 1:
+                if option is None:
+                    # in the case where we stop at the root node -> very rare case, only with small parameters
+                    [node.assign(option, df[self.key].iloc[0]) for option in df[greatest_IG].unique()]
+                else:
+                    node.assign(option, df[self.key].iloc[0])
                 break
             else:
                 self.build_tree(attributes=np.delete(attributes, np.where(attributes == greatest_IG)), node=n_node,
@@ -76,18 +81,19 @@ class ID3:
         if self._model is None:
             raise PermissionError(
                 'You must first build the tree with ID3.built_tree() before using ID3.predict(input_row)')
-        if len(input_row) != len(self._attributes):
-            raise ValueError('The number of input features does not match the model')
+        if len(input_row) != len(self.attributes):
+            raise ValueError(f'Received {input_row} as input, the number of input features does not match the model : '
+                             f'{len(self.attributes)}')
         node = self._model
         try:
-            _input = input_row[np.where(self._attributes == node.attribute)][0]
+            _input = input_row[np.where(self.attributes == node.attribute)[0][0]]
             while not (node.children[_input] in self._key_list):
                 node = node.children[_input]
-                _input = input_row[np.where(self._attributes == node.attribute)][0]
+                _input = input_row[np.where(self.attributes == node.attribute)[0][0]]
             return node.children[_input]
-        except ValueError as ve:
+        except TypeError as ve:
             print(f'An error occurred while processing the input features with the ID3 model, check the integrity of '
-                  f'the input features {ve}')
+                  f'the input features : {ve}')
 
     def entropy_key(self, df: pd.DataFrame):
         """
@@ -160,6 +166,7 @@ if __name__ == '__main__':
                  ["High", "5", "Big", "Medium", "Yes"], ["Medium", "5", "Medium", "Medium", "Yes"],
                  ["Medium", "More", "Big", "High", "Yes"], ["Low", "5", "Medium", "Medium", "No"]]
     test_df = pd.DataFrame(data=test_data, columns=["Maintenance", "Persons", "LuggageBoot", "Safety", "Buy"])
+
     print(test_df)
     test = ID3(training_set=test_df, key="Buy")
 
