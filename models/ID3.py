@@ -7,8 +7,9 @@ class ID3:
     """
     Class defining the ID3 tree attributes and methods
     """
+
     # TODO : implements regression mode
-    # TODO : implements a print function that display the tree's structure
+    # TODO : implements a print function that displays the tree's structure
     def __init__(self, key: str = None, training_set: pd.DataFrame = None, p_type: str = "classification",
                  load_path: str = None):
         """
@@ -20,15 +21,14 @@ class ID3:
         """
         self._model = None
         if training_set is not None:
-            self.training_set = training_set
-            self.key = key
-            self.p_type = p_type
             if p_type not in ["classification", "regression"]:
                 raise NameError(f'{p_type} is not accepted as a prediction type for ID3, see documentation')
             if key not in training_set.columns:
                 raise NameError(f'{key} is not a valid key because this attribute does not exist')
-            self._attributes = training_set.columns
-            self._attributes = np.delete(self._attributes, np.where(self._attributes == self.key))
+            self.training_set = training_set
+            self.key = key
+            self.p_type = p_type
+            self._attributes = np.delete(training_set.columns, np.where(training_set.columns == self.key))
             self._key_list = self.training_set[self.key].unique()
             self.build_tree(df=self.training_set, attributes=self._attributes)
         elif load_path is not None:
@@ -130,6 +130,7 @@ class ID3:
         """
         Sub-Class defining ID3 tree's nodes
         """
+
         def __init__(self, attribute, options=None):
             """
             :param attribute: Attribute (feature) that defines the current split done on this node
@@ -149,7 +150,7 @@ class ID3:
 
 # For testing purpose
 if __name__ == '__main__':
-    # Normally it's a good practise to implement unit testing in a separate file with libraries such as unittest
+    # Normally it's a good practice to implement unit testing in a separate file with libraries such as unittest
 
     test_data = [["High", "More", "Medium", "High", "No"], ["High", "More", "Medium", "Medium", "No"],
                  ["Medium", "More", "Medium", "High", "Yes"], ["Low", "5", "Medium", "High", "Yes"],
