@@ -172,8 +172,11 @@ if __name__ == '__main__':
 
     print(test.predict(np.array(["High", "More", "Big", "High"])))  # YES is the expected value here
     print(test.predict(np.array(["Low", "5", "Medium", "Medium"])))  # NO is the expected value here
+    print(test.predict(np.array(["Low", "4", "Medium", "High"])))  # YES is the expected value here
 
     test.save("test_ID3")
 
     test_2 = ID3(load_path="test_ID3")
+
     print(test_2.predict(np.array(["High", "More", "Big", "High"])))  # YES is the expected value here
+    print(test_2.predict(np.array(["Low", "4", "Medium", "Medium"])))  # NO is the expected value here

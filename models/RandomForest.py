@@ -51,7 +51,6 @@ class RandomForest:
             raise ValueError('You must give in input either a valid training set or a path to an ID3 model (see '
                              'documentation)')
 
-
     def bootstrap(self):
         """
         :return: (pd.DataFrame) Bootstrapped training set
@@ -62,7 +61,8 @@ class RandomForest:
             np.random.choice(np.arange(0, len(self.training_set)), size=self.n_item)
         ][np.append(np.random.choice(self._attributes, size=self.n_feat_tree, replace=False), self.key)]
         # While there are columns with not all inputs represented : start again
-        while True in [len(bootstrap[column].unique()) != len(self.training_set[column].unique()) for column in bootstrap.columns]:
+        while True in [len(bootstrap[column].unique()) != len(self.training_set[column].unique()) for column in
+                       bootstrap.columns]:
             bootstrap = self.training_set.iloc[
                 np.random.choice(np.arange(0, len(self.training_set)), size=self.n_item)
             ][np.append(np.random.choice(self._attributes, size=self.n_feat_tree, replace=False), self.key)]
@@ -122,8 +122,9 @@ if __name__ == '__main__':
 
     print(test.predict(np.array(["High", "More", "Big", "High"])))  # YES is the expected value here
     print(test.predict(np.array(["Low", "5", "Medium", "Medium"])))  # NO is the expected value here
-
+    print(test.predict(np.array(["Low", "4", "Medium", "High"])))  # YES is the expected value here
     test.save("test_RF")
 
     test_2 = RandomForest(load_path="test_RF")
     print(test_2.predict(np.array(["High", "More", "Big", "High"])))  # YES is the expected value here
+    print(test_2.predict(np.array(["Low", "4", "Medium", "Medium"])))  # NO is the expected value here
