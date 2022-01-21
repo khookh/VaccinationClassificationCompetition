@@ -1,2 +1,4 @@
 pip install jupyter
-pip install pandas 
+pip install pandas
+
+jupyter notebook file_name 
