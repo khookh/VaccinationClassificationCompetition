@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 
 
-def mean_feature_clustered(data_frame: pd.DataFrame, feature_name: str, list_features: list, numeric: bool):
+def mean_feature_clustered(data_frame: pd.DataFrame, feature_name: str, list_features: list, numeric: bool,
+                           source_df: pd.DataFrame):
     """
     It returns a data_frame where the NaN value of the given 'feature_name' are replaced by the
     mean values of the 'feature_name' that match the given filters of list_features
@@ -19,14 +20,14 @@ def mean_feature_clustered(data_frame: pd.DataFrame, feature_name: str, list_fea
         :param row: row where the considered feature has a NaN value to handle
         :return: mean(max) value of the rows matching the row features listed in list_features
         """
-        bool_val = [data_frame[feature] == row[feature] for feature in list_features]
+        bool_val = [source_df[feature] == row[feature] for feature in list_features]
         for elem in bool_val[1:-1]: bool_val[0] = np.logical_and(bool_val[0], elem)
-        filtered_df = data_frame[bool_val[0]]
+        filtered_df = source_df[bool_val[0]]
         return filtered_df[feature_name].mean() if numeric else filtered_df[feature_name].value_counts().index[0]
 
     lnan = data_frame[data_frame[feature_name].isna()]
     lnan[feature_name] = lnan.apply(lambda row: filters_mean(row), axis=1)
-    data_frame.loc[lnan.respondent_id, feature_name] = lnan[feature_name]
+    data_frame.loc[lnan.index.tolist(), feature_name] = lnan[feature_name]
     return data_frame
 
 
